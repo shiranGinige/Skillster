@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Skillster.Domain
 {
@@ -8,19 +9,19 @@ namespace Skillster.Domain
         public string FirstName { get; set; }
         public string SecondName { get; set; }
 
-        private IList<Skill> _skills;
-        public IEnumerable<Skill> Skills
+        private IList<ResourceSkill> _skills;
+        public IEnumerable<ResourceSkill> Skills
         {
             get { return _skills; }
         }
 
-        public void AddSkill(Skill skill)
+        public void AddSkill(Skill skill , int skillStrength)
         {
             if(_skills == null)
-                _skills = new List<Skill>();
+                _skills = new List<ResourceSkill>();
 
-            if(!_skills.Contains(skill))
-            _skills.Add(skill);
+            if(!_skills.Select(a=>a.Skill).Contains(skill))
+            _skills.Add(new ResourceSkill(){Skill = skill , Strength = skillStrength});
         }
 
 

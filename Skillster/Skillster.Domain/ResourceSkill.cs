@@ -1,24 +1,26 @@
-﻿using System;
-using Skillster.Domain.Exceptions;
+﻿using Skillster.Domain.Exceptions;
 
 namespace Skillster.Domain
 {
-    public class ResourceSkill
+    
+    public class ResourceSkill 
     {
-        public Resource Resource { get; set; }
-        public Skill Skill { get; set; }
 
-        private int _level;
-        public int Level
+        public DenormalizedReference<Skill> Skill { get; set; }
+
+        private int _strength;
+        public int Strength
         {
-            get { return _level; } 
+            get { return _strength; }
             set
             {
-                if (_level > 5)
+                if (value > 5)
                     throw new MaximumSkillLevelExceededException();
-                _level = value;
+                if (value < 1)
+                    throw new MinimumSkillLevelExceededException();
+
+                _strength = value;
             }
         }
     }
-
 }

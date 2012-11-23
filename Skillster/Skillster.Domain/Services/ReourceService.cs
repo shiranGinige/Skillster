@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Skillster.Domain.Tests
@@ -13,7 +14,8 @@ namespace Skillster.Domain.Tests
 
         public IEnumerable<Resource> GetTopPerformers(Skill skill , int count = 5)
         {
-            return _resourceRepository.GetBySkillIdOrderByLevel(skill.SkillId).Take(count).Select(a=>a.Resource);
+            throw new NotImplementedException();
+            //return _resourceRepository.GetBySkillIdOrderByLevel(skill.Id).Take(count).Select(a=>a.Resource);
         }
 
     }

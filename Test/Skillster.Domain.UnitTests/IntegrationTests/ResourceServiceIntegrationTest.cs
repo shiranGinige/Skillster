@@ -22,7 +22,7 @@ namespace Skillster.Domain.Tests.IntegrationTests
         [TestFixtureSetUp]
         public void Init()
         {
-         
+
         }
 
         [SetUp]
@@ -63,8 +63,6 @@ namespace Skillster.Domain.Tests.IntegrationTests
             var resources = RavenSession.Query<Resource>().Where(a => a.FirstName.StartsWith("FN_")).ToList();
             Assert.AreEqual(10, resources.Count);
 
-
-
         }
 
         [Test]
@@ -73,9 +71,9 @@ namespace Skillster.Domain.Tests.IntegrationTests
 
             //Setup
             var resource = CreateNewResource();
-            resource.AddSkill(new Skill() { SkillId = 1, SkillName = "test skill 1" });
-            resource.AddSkill(new Skill() { SkillId = 2, SkillName = "test skill 2" });
-            resource.AddSkill(new Skill() { SkillId = 3, SkillName = "test skill 3" });
+            resource.AddSkill(new Skill() { Id = 1, Name = "test skill 1" }, 4);
+            resource.AddSkill(new Skill() { Id = 2, Name = "test skill 2" }, 3);
+            resource.AddSkill(new Skill() { Id = 3, Name = "test skill 3" }, 5);
 
             //Act
             RavenSession.Store(resource);
@@ -90,6 +88,8 @@ namespace Skillster.Domain.Tests.IntegrationTests
 
 
         }
+
+
         private Resource CreateNewResource()
         {
             return new Resource() { FirstName = "FN_" + Guid.NewGuid().ToString(), SecondName = "LN_" + Guid.NewGuid().ToString(), ResourceId = Guid.NewGuid().GetHashCode() };
