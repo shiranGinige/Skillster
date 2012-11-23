@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Transactions;
+using FizzWare.NBuilder;
 using NUnit.Framework;
 using Raven.Client;
 using Raven.Client.Document;
@@ -31,11 +33,11 @@ namespace Skillster.Domain.Tests.IntegrationTests
             Stopwatch sw = Stopwatch.StartNew();
             sw.Start();
             Store = new EmbeddableDocumentStore()
-            {
-                DataDirectory = "Data",
-                RunInMemory = true,
-                UseEmbeddedHttpServer = true
-            };
+                        {
+                            DataDirectory = "Data",
+                            RunInMemory = true,
+                            UseEmbeddedHttpServer = true
+                        };
             Store.Initialize();
 
             RavenSession = Store.OpenSession();
@@ -52,16 +54,16 @@ namespace Skillster.Domain.Tests.IntegrationTests
         [Test]
         public void AddResources_FetchAndVerify()
         {
-
-            for (int i = 0; i < 10; i++)
+            var resources = Builder<Resource>.CreateListOfSize(10).All().With(a => a.FirstName, "FN_").Build();
+            foreach (var resource in resources)
             {
-                RavenSession.Store(CreateNewResource());
-            }
+                RavenSession.Store(resource);
 
+            }
             RavenSession.SaveChanges();
 
-            var resources = RavenSession.Query<Resource>().Where(a => a.FirstName.StartsWith("FN_")).ToList();
-            Assert.AreEqual(10, resources.Count);
+            var fetchedResources = RavenSession.Query<Resource>().Where(a => a.FirstName.StartsWith("FN_")).ToList();
+            Assert.AreEqual(10, fetchedResources.Count);
 
         }
 
@@ -70,10 +72,12 @@ namespace Skillster.Domain.Tests.IntegrationTests
         {
 
             //Setup
-            var resource = CreateNewResource();
-            resource.AddSkill(new Skill() { Id = 1, Name = "test skill 1" }, 4);
-            resource.AddSkill(new Skill() { Id = 2, Name = "test skill 2" }, 3);
-            resource.AddSkill(new Skill() { Id = 3, Name = "test skill 3" }, 5);
+            var resource = Builder<Resource>.CreateNew().Build();
+            var sampleSkills = Builder<Skill>.CreateListOfSize(5).Build();
+            foreach (var resoureSkill in sampleSkills)
+            {
+                resource.AddSkill(resoureSkill, 4);
+            }
 
             //Act
             RavenSession.Store(resource);
@@ -82,17 +86,13 @@ namespace Skillster.Domain.Tests.IntegrationTests
             //Verify
 
             var fetchedResource =
-                RavenSession.Query<Resource>().FirstOrDefault(a => a.ResourceId == resource.ResourceId);
+                RavenSession.Query<Resource>().FirstOrDefault(a => a.Id == resource.Id);
             Assert.IsNotNull(fetchedResource);
-            Assert.AreEqual(3, resource.Skills.Count());
+            Assert.AreEqual(5, resource.Skills.Count());
+            Assert.AreEqual(1, resource.Skills.First().Skill.Id);
 
 
-        }
-
-
-        private Resource CreateNewResource()
-        {
-            return new Resource() { FirstName = "FN_" + Guid.NewGuid().ToString(), SecondName = "LN_" + Guid.NewGuid().ToString(), ResourceId = Guid.NewGuid().GetHashCode() };
         }
     }
+
 }

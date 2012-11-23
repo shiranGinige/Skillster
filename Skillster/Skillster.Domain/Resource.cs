@@ -5,10 +5,10 @@ namespace Skillster.Domain
 {
     public class Resource
     {
-        public int ResourceId { get; set; }
+        public int Id { get; set; }
         public string FirstName { get; set; }
-        public string SecondName { get; set; }
-
+        public string LastName { get; set; }
+        
         private IList<ResourceSkill> _skills;
         public IEnumerable<ResourceSkill> Skills
         {
