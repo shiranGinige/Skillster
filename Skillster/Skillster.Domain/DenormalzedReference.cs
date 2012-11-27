@@ -2,7 +2,7 @@
 {
     public class DenormalizedReference<T> where T : INamedDocument
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
 
         public static implicit operator DenormalizedReference<T>(T doc)

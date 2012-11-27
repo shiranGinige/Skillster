@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Transactions;
-using FizzWare.NBuilder;
+﻿using FizzWare.NBuilder;
 using NUnit.Framework;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Embedded;
-using Raven.Client.Indexes;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using Skillster.Domain.Exceptions;
 
 namespace Skillster.Domain.Tests.IntegrationTests
 {
     [TestFixture]
     public class ResourceServiceIntegrationTest
     {
+        UniqueRandomGenerator _generator = new UniqueRandomGenerator();
         public static DocumentStore Store;
 
         public IDocumentSession RavenSession { get; protected set; }
@@ -38,6 +35,7 @@ namespace Skillster.Domain.Tests.IntegrationTests
                             RunInMemory = true,
                             UseEmbeddedHttpServer = true
                         };
+            //Store = new DocumentStore() {Url = "http://ssg:8081" };
             Store.Initialize();
 
             RavenSession = Store.OpenSession();
@@ -48,7 +46,8 @@ namespace Skillster.Domain.Tests.IntegrationTests
         [TearDown]
         public void TearDown()
         {
-
+            RavenSession.Dispose();
+            Store.Dispose();
         }
 
         [Test]
@@ -72,11 +71,12 @@ namespace Skillster.Domain.Tests.IntegrationTests
         {
 
             //Setup
-            var resource = Builder<Resource>.CreateNew().Build();
+            var resource = Builder<Resource>.CreateNew().With(a=>a.Id ,"ResourceId1").Build();
             var sampleSkills = Builder<Skill>.CreateListOfSize(5).Build();
+            var resourceService = new ResourceService(RavenSession);
             foreach (var resoureSkill in sampleSkills)
             {
-                resource.AddSkill(resoureSkill, 4);
+                resourceService.AddSkillForAResource(resource , resoureSkill , 4);
             }
 
             //Act
@@ -89,10 +89,74 @@ namespace Skillster.Domain.Tests.IntegrationTests
                 RavenSession.Query<Resource>().FirstOrDefault(a => a.Id == resource.Id);
             Assert.IsNotNull(fetchedResource);
             Assert.AreEqual(5, resource.Skills.Count());
-            Assert.AreEqual(1, resource.Skills.First().Skill.Id);
+            Assert.AreEqual(4, resource.Skills.First().Strength);
 
+        }
 
+        [Test]
+        public void AddResourceForSkill_MakeSureResourceIsSavedOnlyOnce()
+        {
+
+            var resource = CreateSampleResource();
+            RavenSession.Store(resource);
+            RavenSession.SaveChanges();
+
+            var resources = RavenSession.Query<Resource>().ToList();
+            Assert.AreEqual(1 , resources.Count);
+
+            var resourceService = new ResourceService(RavenSession);
+            resourceService.AddSkillForAResource(resource , CreateSampleSkill() , 5);
+
+            RavenSession.SaveChanges();
+            var resourcesAgain = RavenSession.Query<Resource>().ToList();
+            Assert.AreEqual(1, resourcesAgain.Count);
+            Assert.AreEqual(1 , resourcesAgain.First().Skills.Count());
+
+        }
+
+        [Test]
+        public void AddSkillsForAResource_MakeSureDuplicateAreHandled()
+        {
+            //Setup
+            var resource = CreateSampleResource();
+            var skill = CreateSampleSkill();
+
+            //Act
+            var resourceService = new ResourceService(RavenSession);
+            resourceService.AddSkillForAResource(resource, skill, 4);
+
+            var resource2 = CreateSampleResource();
+            resourceService.AddSkillForAResource(resource2, skill, 3);
+            
+            RavenSession.SaveChanges();
+            
+            var skills = RavenSession.Query<Skill>().Where(a=>a.Name == skill.Name);
+            
+            //Assert
+            Assert.AreEqual(1, skills.Count());
+            
+        }
+        [Test]
+        [ExpectedException(typeof(ResourceAlreadyPossessingThisSkillException))]
+        public void AddSkillsForAResources_AddTheSameSkillTwice_AnExceptionShouldBeThrown()
+        {
+            var resource = CreateSampleResource();
+            var skill = CreateSampleSkill();
+
+            var resourceService = new ResourceService(RavenSession);
+            resourceService.AddSkillForAResource(resource, skill, 2);
+            resourceService.AddSkillForAResource(resource, skill, 3);
+
+        }
+        private Resource CreateSampleResource()
+        {
+            return Builder<Resource>.CreateNew().With(a => a.Id, _generator.Next(1,int.MaxValue).ToString()).Build();
+        }
+        private Skill CreateSampleSkill()
+        {
+            return Builder<Skill>.CreateNew().With(a => a.Id, _generator.Next(1, int.MaxValue).ToString()).Build();
         }
     }
 
 }
+

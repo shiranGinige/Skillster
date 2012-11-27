@@ -97,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DenormalzedReference.cs" />
+    <Compile Include="Entity.cs" />
     <Compile Include="Exceptions\MaximumSkillLevelExceededException.cs" />
     <Compile Include="Exceptions\MinimumSkillLevelExceededException.cs" />
     <Compile Include="INamedDocument.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Repositories\ISkillsRepository.cs" />
     <Compile Include="ResourceSkill.cs" />
     <Compile Include="Services\ReourceService.cs" />
+    <Compile Include="Exceptions\ResourceAlreadyPossessingThisSkillException.cs" />
     <Compile Include="Skill.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SkillGroup.cs" />
