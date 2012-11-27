@@ -24,6 +24,9 @@ namespace Skillster.Domain
             _skills.Add(new ResourceSkill(){Skill = skill , Strength = skillStrength});
         }
 
+        public string StackOverflowHandle{ get; set; }
+        public string TwitterHandle { get; set; }
+        public string GithubHandle{ get; set; }
 
     }
 }
