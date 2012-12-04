@@ -148,6 +148,36 @@ namespace Skillster.Domain.Tests.IntegrationTests
             resourceService.AddSkillForAResource(resource, skill, 3);
 
         }
+
+        [Test]
+        public void RemoveSkillFromResource_TheResourceShouldRemainOneSkillLess()
+        {
+            var resource = CreateSampleResource();
+            var skill = CreateSampleSkill();
+            var skill2 = CreateSampleSkill();
+            
+            
+            var resourceService = new ResourceService(RavenSession);
+
+            resourceService.AddSkillForAResource(resource, skill, 2);
+            resourceService.AddSkillForAResource(resource, skill2, 3);
+
+            RavenSession.SaveChanges();
+
+            var fetchedResource = RavenSession.Load<Resource>(resource.Id);
+            Assert.AreEqual(2 , fetchedResource.Skills.Count);
+            
+            resourceService.RemoveSkillFromResource(resource, skill);
+
+            RavenSession.SaveChanges();
+
+            var fetchedResource2 = RavenSession.Load<Resource>(resource.Id);
+            Assert.AreEqual(1, fetchedResource2.Skills.Count);
+
+
+        }
+
+
         private Resource CreateSampleResource()
         {
             return Builder<Resource>.CreateNew().With(a => a.Id, _generator.Next(1,int.MaxValue).ToString()).Build();

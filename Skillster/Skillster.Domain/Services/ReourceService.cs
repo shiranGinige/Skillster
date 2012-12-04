@@ -33,12 +33,18 @@ namespace Skillster.Domain.Tests
             DocumentSession.Store(resource);
         }
 
+
         private bool isResourceAlreadyHaveTheSkill(Resource resource, Skill skill)
         {
             if (resource.Skills.Count == 0)
                 return false;
 
             return  resource.Skills.FirstOrDefault(a => a.Skill.Id == skill.Id) != null;
+        }
+
+        public void RemoveSkillFromResource(Resource resource, Skill skill)
+        {
+            resource.RemoveSkill(skill);
         }
     }
 

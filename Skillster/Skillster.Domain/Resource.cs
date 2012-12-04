@@ -24,6 +24,13 @@ namespace Skillster.Domain
             _skills.Add(new ResourceSkill(){Skill = skill , Strength = skillStrength});
         }
 
+        internal void RemoveSkill(Skill skill)
+        {
+            var resSkill = _skills.FirstOrDefault(a => a.Skill.Id == skill.Id);
+            if (resSkill != null)
+                _skills.Remove(resSkill);
+        }
+
         public string StackOverflowHandle{ get; set; }
         public string TwitterHandle { get; set; }
         public string GithubHandle{ get; set; }
